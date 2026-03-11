@@ -17,5 +17,8 @@ hand-rake*.png
 hori-hori-final.png
 hori-icon.png
 
+# Admin (private — Dropbox only)
+admin.html
+
 # OS files
 .DS_Store
