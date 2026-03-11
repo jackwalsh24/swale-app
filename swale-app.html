@@ -1446,11 +1446,14 @@ function applyTransform(animate) {
   heroScene.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
 }
 
+let pinchJustEnded = false;
+
 heroViewport.addEventListener('touchstart', e => {
   heroScene.style.transition = 'none';
   if (e.touches.length === 2) {
     isPinching = true;
     isDragging = false;
+    pinchJustEnded = false;
     pinchStartDist = getTouchDist(e.touches[0], e.touches[1]);
     pinchStartScale = scale;
     const mid = getTouchMid(e.touches[0], e.touches[1]);
@@ -1460,6 +1463,12 @@ heroViewport.addEventListener('touchstart', e => {
     dragStartPanY = panY;
     e.preventDefault();
   } else if (e.touches.length === 1) {
+    // Ignore single touch right after pinch (finger lift)
+    if (pinchJustEnded) {
+      e.preventDefault();
+      return;
+    }
+
     // Double-tap to reset
     const now = Date.now();
     if (now - lastTapTime < 300) {
@@ -1467,7 +1476,6 @@ heroViewport.addEventListener('touchstart', e => {
         scale = 1; panX = 0; panY = 0;
       } else {
         scale = 2.5;
-        // Zoom toward tap point
         const rect = heroViewport.getBoundingClientRect();
         const tx = e.touches[0].clientX - rect.left - rect.width / 2;
         const ty = e.touches[0].clientY - rect.top - rect.height / 2;
@@ -1496,7 +1504,7 @@ heroViewport.addEventListener('touchmove', e => {
   if (isPinching && e.touches.length === 2) {
     const dist = getTouchDist(e.touches[0], e.touches[1]);
     const mid = getTouchMid(e.touches[0], e.touches[1]);
-    scale = clamp(pinchStartScale * (dist / pinchStartDist), 1, 5);
+    scale = clamp(pinchStartScale * (dist / pinchStartDist), 0.8, 5);
     // Pan follows midpoint movement
     panX = dragStartPanX + (mid.x - pinchMidX);
     panY = dragStartPanY + (mid.y - pinchMidY);
@@ -1511,15 +1519,22 @@ heroViewport.addEventListener('touchmove', e => {
 }, { passive: false });
 
 heroViewport.addEventListener('touchend', e => {
-  if (e.touches.length < 2) isPinching = false;
-  if (e.touches.length === 0) {
+  if (e.touches.length < 2 && isPinching) {
+    // One finger lifted from pinch — block drag from remaining finger
+    isPinching = false;
     isDragging = false;
-    // Snap back to 1x if barely zoomed
-    if (scale < 1.15) {
+    pinchJustEnded = true;
+    setTimeout(() => { pinchJustEnded = false; }, 300);
+  }
+  if (e.touches.length === 0) {
+    isPinching = false;
+    isDragging = false;
+    if (scale < 1.05) {
       scale = 1; panX = 0; panY = 0;
       applyTransform(true);
     } else {
-      applyTransform(true); // animate to constrained position
+      constrainPan();
+      applyTransform(true);
     }
   }
   document.getElementById('zoomHint').style.opacity = '0';
