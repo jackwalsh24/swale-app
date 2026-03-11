@@ -101,21 +101,6 @@ body {
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-/* Hero image fade-in */
-.hero-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  pointer-events: none;
-  opacity: 0;
-  transform: scale(1.03);
-  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
-}
-.hero-image.loaded {
-  opacity: 1;
-  transform: scale(1);
-}
-
 /* Header */
 .header {
   display: flex;
@@ -160,72 +145,172 @@ body {
 /* Pages */
 .page { display: none; padding: 0 16px 100px; max-width: 600px; margin: 0 auto; }
 .page.active { display: block; }
+#page-home.active { padding: 0; max-width: none; }
 
-/* Hero isometric scene — pinch to zoom */
+/* Header hidden on home page hero, shown when scrolled to control center */
+.header.hero-mode { transform: translateY(-100%); opacity: 0; pointer-events: none; transition: transform 0.3s, opacity 0.3s; }
+.header { transition: transform 0.3s, opacity 0.3s; }
+/* Bottom nav hidden on hero, shown when scrolled */
+.bottom-nav.hero-mode { transform: translateY(100%); opacity: 0; pointer-events: none; transition: transform 0.3s, opacity 0.3s; }
+.bottom-nav { transition: transform 0.3s, opacity 0.3s; }
+
+/* Hero — fullscreen immersive */
 .hero {
   position: relative;
   width: 100%;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  background: linear-gradient(180deg, #1a1510 0%, var(--bg) 100%);
+  justify-content: center;
+  background: #0a1a0f;
   overflow: hidden;
   touch-action: none;
+  flex-shrink: 0;
 }
 .hero-viewport {
   width: 100%;
-  max-width: 600px;
+  height: 100%;
   position: relative;
   overflow: hidden;
   cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .hero-viewport:active { cursor: grabbing; }
 .hero-scene {
   width: 100%;
+  max-width: 700px;
   transform-origin: center center;
   position: relative;
   will-change: transform;
 }
+.hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(1.03);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+.hero-image.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
 .hero-overlay {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 80px;
-  background: linear-gradient(transparent, var(--bg));
+  height: 120px;
+  background: linear-gradient(transparent, rgba(10,26,15,0.8));
   pointer-events: none;
   z-index: 3;
 }
+/* Status bar on hero */
+.hero-status {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 16px; right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+.hero-status-left { display: flex; align-items: center; gap: 8px; }
+.hero-status-logo {
+  width: 24px; height: 24px;
+  background: rgba(34,197,94,0.25);
+  backdrop-filter: blur(10px);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 11px; color: rgba(255,255,255,0.8);
+}
+.hero-status-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.hero-status-live {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; color: var(--green);
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.hero-status-live::before {
+  content: ''; width: 5px; height: 5px;
+  background: var(--green); border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+/* Weather on hero */
 .hero-weather {
   position: absolute;
-  top: 12px; left: 50%;
+  top: calc(50px + env(safe-area-inset-top));
+  left: 50%;
   transform: translateX(-50%);
   text-align: center;
   z-index: 4;
   pointer-events: none;
 }
-.hero-weather-temp { font-size: 42px; font-weight: 200; letter-spacing: -2px; }
-.hero-weather-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.hero-weather-temp { font-size: 48px; font-weight: 200; letter-spacing: -2px; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+.hero-weather-desc { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+/* Property name */
 .hero-property-name {
   position: absolute;
-  bottom: 16px; left: 50%;
+  bottom: 56px; left: 50%;
   transform: translateX(-50%);
-  font-size: 12px; font-weight: 600;
-  color: var(--text);
-  letter-spacing: 1.5px;
+  font-size: 11px; font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 2px;
   text-transform: uppercase;
   z-index: 4;
   pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
-.hero-zoom-hint {
+/* Swipe up handle */
+.hero-handle {
   position: absolute;
-  bottom: 40px; left: 50%;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
-  color: var(--text-secondary);
-  opacity: 0.6;
-  z-index: 4;
-  pointer-events: none;
-  transition: opacity 0.5s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 5;
+  animation: handle-bob 2.5s ease-in-out infinite;
 }
+.hero-handle-pill {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.35);
+}
+.hero-handle-text {
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+@keyframes handle-bob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+/* Control center panel */
+.control-center {
+  padding: 0 16px 100px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.cc-handle-bar {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 8px;
+}
+.cc-handle-pill {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+.hero-zoom-hint { display: none; }
 
 /* Hotspots on hero image */
 .hotspot {
@@ -779,6 +864,14 @@ body {
 
   <!-- Hero with pinch-zoom and hotspots -->
   <div class="hero" id="heroContainer">
+    <!-- Status bar overlaid on hero -->
+    <div class="hero-status">
+      <div class="hero-status-left">
+        <div class="hero-status-logo">S</div>
+        <div class="hero-status-name">Swale Intelligence</div>
+      </div>
+      <div class="hero-status-live">Live</div>
+    </div>
     <div class="hero-weather">
       <div class="hero-weather-temp" id="weatherTemp">--°</div>
       <div class="hero-weather-desc" id="weatherDesc">Loading...</div>
@@ -797,6 +890,11 @@ body {
     <div class="hero-overlay"></div>
     <div class="hero-property-name">Walsh Field Station</div>
     <div class="hero-zoom-hint" id="zoomHint">Pinch to zoom · Tap sensors for data</div>
+    <!-- Swipe up handle -->
+    <div class="hero-handle" id="heroHandle">
+      <div class="hero-handle-pill"></div>
+      <div class="hero-handle-text">Swipe up</div>
+    </div>
   </div>
 
   <!-- Hotspot popup (floats above hero) -->
@@ -806,7 +904,9 @@ body {
     <div class="hotspot-popup-detail" id="popupDetail"></div>
   </div>
 
-  <div style="padding:0 16px; max-width:600px; margin:0 auto;">
+  <!-- Control Center (revealed by scrolling past hero) -->
+  <div class="control-center" id="controlCenter">
+    <div class="cc-handle-bar"><div class="cc-handle-pill"></div></div>
     <!-- Soil Moisture -->
     <div class="section-header">
       <span class="section-title">Soil Moisture</span>
@@ -1049,10 +1149,52 @@ function navigateTo(page) {
   document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
   window.scrollTo(0, 0);
 
+  // Hero mode: hide header/nav when on home page hero
+  const header = document.querySelector('.header');
+  const nav = document.getElementById('bottomNav');
+  if (page === 'home') {
+    header.classList.add('hero-mode');
+    nav.classList.add('hero-mode');
+  } else {
+    header.classList.remove('hero-mode');
+    nav.classList.remove('hero-mode');
+  }
+
   if (page === 'zones') renderZonesPage();
   if (page === 'lights') renderLightsPage();
   if (page === 'history') renderHistoryPage();
 }
+
+// ========== HERO SCROLL DETECTION ==========
+// Show header + bottom nav when user scrolls past hero into control center
+(function() {
+  const header = document.querySelector('.header');
+  const nav = document.getElementById('bottomNav');
+  const handle = document.getElementById('heroHandle');
+  let lastScroll = 0;
+
+  // Start in hero mode on home page
+  header.classList.add('hero-mode');
+  nav.classList.add('hero-mode');
+
+  window.addEventListener('scroll', () => {
+    if (currentPage !== 'home') return;
+    const heroH = document.getElementById('heroContainer').offsetHeight;
+    const scrollY = window.scrollY;
+    const threshold = heroH * 0.3; // 30% scrolled past hero = show UI
+
+    if (scrollY > threshold) {
+      header.classList.remove('hero-mode');
+      nav.classList.remove('hero-mode');
+      if (handle) handle.style.opacity = '0';
+    } else {
+      header.classList.add('hero-mode');
+      nav.classList.add('hero-mode');
+      if (handle) handle.style.opacity = '';
+    }
+    lastScroll = scrollY;
+  }, { passive: true });
+})();
 
 // ========== HOME PAGE ==========
 function updateDashboard() {
