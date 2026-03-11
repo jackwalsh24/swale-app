@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swale Admin</title>
+<style>
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --border: #e5e5e4;
+  --text: #1c1917;
+  --text-secondary: #78716c;
+  --primary: #16a34a;
+  --primary-hover: #15803d;
+  --primary-subtle: #f0fdf4;
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --danger: #dc2626;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1c;
+    --surface: #2a2a2a;
+    --border: #3a3a3a;
+    --text: #e7e5e4;
+    --text-secondary: #a8a29e;
+    --primary: #22c55e;
+    --primary-hover: #16a34a;
+    --primary-subtle: #052e16;
+    --warning: #facc15;
+    --danger: #f87171;
+  }
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Layout */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-logo { height: 20px; opacity: 0.85; }
+@media (prefers-color-scheme: light) {
+  .topbar-logo { filter: invert(1); }
+}
+.topbar-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+.topbar-actions { display: flex; gap: 8px; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+}
+.stat-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-value { font-size: 28px; font-weight: 600; letter-spacing: -1px; }
+.stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.stat-value.green { color: var(--primary); }
+.stat-value.amber { color: var(--warning); }
+.stat-value.red { color: var(--danger); }
+
+/* Customer table */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.table-title { font-size: 14px; font-weight: 600; }
+.table-count { font-size: 12px; color: var(--text-secondary); margin-left: 8px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: var(--primary-subtle);
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--primary-subtle); }
+.customer-name { font-weight: 600; }
+.customer-address { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-active { background: var(--primary-subtle); color: var(--primary); }
+.badge-inactive { background: rgba(220,38,38,0.08); color: var(--danger); }
+.badge-pending { background: rgba(202,138,4,0.1); color: var(--warning); }
+.badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Plan badges */
+.plan-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.plan-core { background: #e0e7ff; color: #4338ca; }
+.plan-pro { background: var(--primary-subtle); color: var(--primary); }
+.plan-complete { background: #fef3c7; color: #92400e; }
+@media (prefers-color-scheme: dark) {
+  .plan-core { background: rgba(67,56,202,0.2); color: #818cf8; }
+  .plan-pro { background: var(--primary-subtle); color: var(--primary); }
+  .plan-complete { background: rgba(146,64,14,0.2); color: #fbbf24; }
+}
+
+/* Feature toggles */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+.feature-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.feature-toggle:hover { border-color: var(--primary); }
+.feature-toggle.on { background: var(--primary-subtle); border-color: var(--primary); }
+.toggle-switch {
+  width: 32px; height: 18px;
+  background: var(--border);
+  border-radius: 9px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.feature-toggle.on .toggle-switch { background: var(--primary); }
+.feature-toggle.on .toggle-switch::after { transform: translateX(14px); }
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.btn:hover { border-color: var(--text-secondary); }
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { background: rgba(220,38,38,0.08); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-body { padding: 20px 24px; }
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 24px 20px;
+}
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus { border-color: var(--primary); }
+select.form-input { cursor: pointer; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Detail panel */
+.detail-panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-top: 16px;
+}
+.detail-panel.open { display: block; }
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-name { font-size: 18px; font-weight: 600; }
+.detail-body { padding: 20px 24px; }
+.detail-section { margin-bottom: 20px; }
+.detail-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+}
+.detail-row-label { color: var(--text-secondary); }
+
+/* Products tab */
+.product-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+.product-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.product-name { font-size: 18px; font-weight: 600; }
+.product-price { font-size: 24px; font-weight: 600; color: var(--primary); }
+.product-price span { font-size: 13px; font-weight: 400; color: var(--text-secondary); }
+.product-features { list-style: none; }
+.product-features li {
+  padding: 6px 0;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.product-features li::before { content: '✓'; color: var(--primary); font-weight: 700; }
+.product-features li.disabled { color: var(--text-secondary); }
+.product-features li.disabled::before { content: '—'; color: var(--border); }
+
+/* Activity log */
+.activity-list { list-style: none; }
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.activity-dot.warning { background: var(--warning); }
+.activity-dot.danger { background: var(--danger); }
+.activity-time { color: var(--text-secondary); white-space: nowrap; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 16px; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  table { font-size: 12px; }
+  th, td { padding: 8px 10px; }
+  .form-row { grid-template-columns: 1fr; }
+  .hide-mobile { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <img class="topbar-logo" src="swale-logo-white.png" alt="Swale">
+    <span class="topbar-title">Admin</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-sm" onclick="exportData()">Export JSON</button>
+    <button class="btn btn-sm" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="customers" onclick="switchTab('customers')">Customers</button>
+    <button class="tab" data-tab="products" onclick="switchTab('products')">Products</button>
+    <button class="tab" data-tab="activity" onclick="switchTab('activity')">Activity</button>
+  </div>
+
+  <!-- ===== CUSTOMERS TAB ===== -->
+  <div class="tab-content" id="tab-customers">
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="table-wrap">
+      <div class="table-header">
+        <div style="display:flex;align-items:center;">
+          <span class="table-title">Customers</span>
+          <span class="table-count" id="customerCount"></span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddCustomer()">+ Add Customer</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Sensors</th>
+              <th>Last Login</th>
+              <th class="hide-mobile">MRR</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="customerTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-header">
+        <span class="detail-name" id="detailName"></span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm" onclick="editCustomer()">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCustomer()">Delete</button>
+          <button class="btn btn-sm" onclick="closeDetail()">Close</button>
+        </div>
+      </div>
+      <div class="detail-body" id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== PRODUCTS TAB ===== -->
+  <div class="tab-content" id="tab-products" style="display:none">
+    <div id="productsContent"></div>
+  </div>
+
+  <!-- ===== ACTIVITY TAB ===== -->
+  <div class="tab-content" id="tab-activity" style="display:none">
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title">Activity Log</span>
+      </div>
+      <div style="padding:16px 20px;">
+        <ul class="activity-list" id="activityList"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Customer Modal -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Add Customer</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Customer Name</label>
+          <input class="form-input" id="fName" placeholder="Walsh Residence">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Name</label>
+          <input class="form-input" id="fContact" placeholder="Jack Walsh">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address</label>
+        <input class="form-input" id="fAddress" placeholder="123 Main St, Seattle WA">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="fEmail" type="email" placeholder="jack@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="fPhone" type="tel" placeholder="(206) 555-1234">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Plan</label>
+          <select class="form-input" id="fPlan">
+            <option value="core">Swale Core — $10/mo</option>
+            <option value="pro" selected>Swale Pro — $15/mo</option>
+            <option value="complete">Swale Complete — $20/mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Install Date</label>
+          <input class="form-input" id="fInstallDate" type="date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Latitude</label>
+          <input class="form-input" id="fLat" type="number" step="0.0001" placeholder="47.7185">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Longitude</label>
+          <input class="form-input" id="fLng" type="number" step="0.0001" placeholder="-122.2930">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Enabled Features</label>
+        <div class="features-grid" id="fFeatures"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" id="fNotes" placeholder="Optional notes...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCustomer()">Save Customer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== DATA MODEL ==========
+const FEATURES = [
+  { key: 'soilMoisture', name: 'Soil Moisture', icon: '💧', tier: 'core' },
+  { key: 'weather', name: 'Weather', icon: '🌤', tier: 'core' },
+  { key: 'dashboard', name: 'Dashboard', icon: '📊', tier: 'core' },
+  { key: 'rainbird', name: 'RainBird Control', icon: '🌧', tier: 'pro' },
+  { key: 'waterTable', name: 'Water Table', icon: '📐', tier: 'pro' },
+  { key: 'impact', name: 'Impact Stats', icon: '🌿', tier: 'pro' },
+  { key: 'submeters', name: 'Submeters', icon: '🔢', tier: 'complete' },
+  { key: 'lighting', name: 'Lighting Control', icon: '💡', tier: 'complete' },
+  { key: 'history', name: '30-Day History', icon: '📈', tier: 'complete' },
+];
+
+const PLANS = {
+  core: { name: 'Swale Core', price: 10, features: ['soilMoisture', 'weather', 'dashboard'] },
+  pro: { name: 'Swale Pro', price: 15, features: ['soilMoisture', 'weather', 'dashboard', 'rainbird', 'waterTable', 'impact'] },
+  complete: { name: 'Swale Complete', price: 20, features: ['soilMoisture', 'weather', 'dashboard', 'rainbird', 'waterTable', 'impact', 'submeters', 'lighting', 'history'] },
+};
+
+const STORAGE_KEY = 'swale_admin_data';
+let data = loadData();
+let selectedId = null;
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { customers: [], activity: [] };
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function genId() {
+  return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ========== SEED DATA ==========
+if (!data.customers.length) {
+  data.customers = [
+    {
+      id: 'c_demo1',
+      name: 'Walsh Residence',
+      contact: 'Jack Walsh',
+      address: '123 NE 100th St, Seattle WA 98125',
+      email: 'jack@swale.bio',
+      phone: '(206) 555-1234',
+      plan: 'pro',
+      installDate: '2026-02-15',
+      lat: 47.7185,
+      lng: -122.2930,
+      features: ['soilMoisture', 'weather', 'dashboard', 'rainbird', 'waterTable', 'impact'],
+      status: 'active',
+      lastLogin: new Date(Date.now() - 2 * 3600000).toISOString(),
+      healthScore: 92,
+      sensorCount: 6,
+      notes: 'First install. Demo property.',
+      created: '2026-02-15T08:00:00Z',
+    },
+    {
+      id: 'c_demo2',
+      name: 'Peterson Property',
+      contact: 'Sarah Peterson',
+      address: '456 NE 95th St, Seattle WA 98115',
+      email: 'sarah.p@gmail.com',
+      phone: '(206) 555-5678',
+      plan: 'core',
+      installDate: '2026-03-01',
+      lat: 47.7132,
+      lng: -122.2895,
+      features: ['soilMoisture', 'weather', 'dashboard'],
+      status: 'active',
+      lastLogin: new Date(Date.now() - 48 * 3600000).toISOString(),
+      healthScore: 78,
+      sensorCount: 3,
+      notes: 'Rain Check eligible. Considering upgrade to Pro.',
+      created: '2026-03-01T10:00:00Z',
+    },
+    {
+      id: 'c_demo3',
+      name: 'Lake City Church',
+      contact: 'Rev. Tom Chen',
+      address: '12345 30th Ave NE, Seattle WA 98125',
+      email: 'tchen@lcchurch.org',
+      phone: '(206) 555-9999',
+      plan: 'complete',
+      installDate: '2026-03-05',
+      lat: 47.7198,
+      lng: -122.2960,
+      features: ['soilMoisture', 'weather', 'dashboard', 'rainbird', 'waterTable', 'impact', 'submeters', 'lighting', 'history'],
+      status: 'pending',
+      lastLogin: null,
+      healthScore: null,
+      sensorCount: 9,
+      notes: 'Commercial install. 3 swale zones + parking lot infiltration.',
+      created: '2026-03-05T14:00:00Z',
+    },
+  ];
+  data.activity = [
+    { ts: new Date(Date.now() - 2*3600000).toISOString(), type: 'login', customer: 'Walsh Residence', msg: 'Logged in from iPhone' },
+    { ts: new Date(Date.now() - 5*3600000).toISOString(), type: 'alert', customer: 'Walsh Residence', msg: 'Sump pump activated (water table at 34")' },
+    { ts: new Date(Date.now() - 24*3600000).toISOString(), type: 'action', customer: 'Walsh Residence', msg: 'RainBird Zone 3 manually triggered for 10 min' },
+    { ts: new Date(Date.now() - 48*3600000).toISOString(), type: 'login', customer: 'Peterson Property', msg: 'Logged in from Android' },
+    { ts: new Date(Date.now() - 72*3600000).toISOString(), type: 'install', customer: 'Lake City Church', msg: 'Account created, sensors pending activation' },
+    { ts: new Date(Date.now() - 96*3600000).toISOString(), type: 'billing', customer: 'Peterson Property', msg: 'Invoice #1002 paid — $10.00' },
+    { ts: new Date(Date.now() - 120*3600000).toISOString(), type: 'alert', customer: 'Walsh Residence', msg: 'Swale Z moisture below 20% — needs watering' },
+  ];
+  saveData();
+}
+
+// ========== RENDER ==========
+function render() {
+  renderStats();
+  renderTable();
+  renderProducts();
+  renderActivity();
+  if (selectedId) renderDetail();
+}
+
+function renderStats() {
+  const active = data.customers.filter(c => c.status === 'active').length;
+  const pending = data.customers.filter(c => c.status === 'pending').length;
+  const mrr = data.customers.filter(c => c.status === 'active').reduce((sum, c) => sum + PLANS[c.plan].price, 0);
+  const sensors = data.customers.reduce((sum, c) => sum + (c.sensorCount || 0), 0);
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Active Customers</div>
+      <div class="stat-value green">${active}</div>
+      ${pending ? `<div class="stat-sub">${pending} pending activation</div>` : ''}
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Monthly Revenue</div>
+      <div class="stat-value">$${mrr}</div>
+      <div class="stat-sub">$${mrr * 12}/yr projected</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sensors Deployed</div>
+      <div class="stat-value">${sensors}</div>
+      <div class="stat-sub">${data.customers.length} properties</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Health Score</div>
+      <div class="stat-value ${avgHealth(data.customers) >= 80 ? 'green' : avgHealth(data.customers) >= 60 ? 'amber' : 'red'}">${avgHealth(data.customers) || '—'}</div>
+      <div class="stat-sub">across active properties</div>
+    </div>
+  `;
+}
+
+function avgHealth(customers) {
+  const scores = customers.filter(c => c.healthScore != null).map(c => c.healthScore);
+  return scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('customerTable');
+  document.getElementById('customerCount').textContent = `(${data.customers.length})`;
+
+  tbody.innerHTML = data.customers.map(c => {
+    const plan = PLANS[c.plan];
+    const lastLogin = c.lastLogin ? timeAgo(new Date(c.lastLogin)) : 'Never';
+    const statusCls = c.status === 'active' ? 'badge-active' : c.status === 'pending' ? 'badge-pending' : 'badge-inactive';
+    const planCls = 'plan-' + c.plan;
+    return `
+      <tr onclick="selectCustomer('${c.id}')" style="cursor:pointer">
+        <td>
+          <div class="customer-name">${esc(c.name)}</div>
+          <div class="customer-address">${esc(c.address)}</div>
+        </td>
+        <td><span class="plan-badge ${planCls}">${plan.name}</span></td>
+        <td><span class="badge ${statusCls}">${c.status}</span></td>
+        <td>${c.sensorCount || 0}</td>
+        <td>${lastLogin}</td>
+        <td class="hide-mobile">$${plan.price}/mo</td>
+        <td><button class="btn btn-sm" onclick="event.stopPropagation(); editCustomerById('${c.id}')">Edit</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderDetail() {
+  const c = data.customers.find(x => x.id === selectedId);
+  if (!c) { closeDetail(); return; }
+  const panel = document.getElementById('detailPanel');
+  panel.classList.add('open');
+  document.getElementById('detailName').textContent = c.name;
+
+  const plan = PLANS[c.plan];
+  const enabledFeatures = FEATURES.filter(f => c.features.includes(f.key));
+  const disabledFeatures = FEATURES.filter(f => !c.features.includes(f.key));
+  const recentActivity = data.activity.filter(a => a.customer === c.name).slice(0, 5);
+
+  document.getElementById('detailBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="detail-section">
+        <div class="detail-section-title">Property Info</div>
+        <div class="detail-row"><span class="detail-row-label">Contact</span><span>${esc(c.contact)}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Email</span><span>${esc(c.email)}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Phone</span><span>${esc(c.phone)}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Address</span><span>${esc(c.address)}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Coords</span><span>${c.lat}, ${c.lng}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Install Date</span><span>${c.installDate || '—'}</span></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Account</div>
+        <div class="detail-row"><span class="detail-row-label">Plan</span><span class="plan-badge plan-${c.plan}">${plan.name}</span></div>
+        <div class="detail-row"><span class="detail-row-label">MRR</span><span>$${plan.price}/mo</span></div>
+        <div class="detail-row"><span class="detail-row-label">Status</span><span class="badge badge-${c.status === 'active' ? 'active' : c.status === 'pending' ? 'pending' : 'inactive'}">${c.status}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Health Score</span><span>${c.healthScore != null ? c.healthScore + '/100' : '—'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Sensors</span><span>${c.sensorCount || 0}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Last Login</span><span>${c.lastLogin ? timeAgo(new Date(c.lastLogin)) : 'Never'}</span></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Enabled Features (${enabledFeatures.length}/${FEATURES.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${enabledFeatures.map(f => `<span style="padding:4px 10px;background:var(--primary-subtle);color:var(--primary);border-radius:6px;font-size:12px;font-weight:500;">${f.icon} ${f.name}</span>`).join('')}
+        ${disabledFeatures.map(f => `<span style="padding:4px 10px;background:var(--bg);color:var(--text-secondary);border-radius:6px;font-size:12px;">${f.icon} ${f.name}</span>`).join('')}
+      </div>
+    </div>
+    ${c.notes ? `<div class="detail-section"><div class="detail-section-title">Notes</div><div style="font-size:13px;color:var(--text-secondary);">${esc(c.notes)}</div></div>` : ''}
+    ${recentActivity.length ? `
+      <div class="detail-section">
+        <div class="detail-section-title">Recent Activity</div>
+        <ul class="activity-list">
+          ${recentActivity.map(a => `
+            <li class="activity-item">
+              <span class="activity-dot ${a.type === 'alert' ? 'warning' : a.type === 'billing' ? '' : ''}"></span>
+              <div style="flex:1">${esc(a.msg)}</div>
+              <span class="activity-time">${timeAgo(new Date(a.ts))}</span>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderProducts() {
+  document.getElementById('productsContent').innerHTML = Object.entries(PLANS).map(([key, plan]) => {
+    const customerCount = data.customers.filter(c => c.plan === key).length;
+    return `
+      <div class="product-card">
+        <div class="product-header">
+          <div>
+            <div class="product-name">${plan.name}</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${customerCount} customer${customerCount !== 1 ? 's' : ''}</div>
+          </div>
+          <div class="product-price">$${plan.price}<span>/mo</span></div>
+        </div>
+        <ul class="product-features">
+          ${FEATURES.map(f => `<li class="${plan.features.includes(f.key) ? '' : 'disabled'}">${f.icon} ${f.name}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActivity() {
+  const list = document.getElementById('activityList');
+  list.innerHTML = data.activity.slice(0, 50).map(a => {
+    const dotCls = a.type === 'alert' ? 'warning' : a.type === 'billing' ? '' : a.type === 'install' ? '' : '';
+    return `
+      <li class="activity-item">
+        <span class="activity-dot ${dotCls}"></span>
+        <div style="flex:1">
+          <strong>${esc(a.customer)}</strong> — ${esc(a.msg)}
+        </div>
+        <span class="activity-time">${timeAgo(new Date(a.ts))}</span>
+      </li>
+    `;
+  }).join('');
+}
+
+// ========== ACTIONS ==========
+function selectCustomer(id) {
+  selectedId = id;
+  renderDetail();
+  document.getElementById('detailPanel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeDetail() {
+  selectedId = null;
+  document.getElementById('detailPanel').classList.remove('open');
+}
+
+function openAddCustomer() {
+  document.getElementById('editId').value = '';
+  document.getElementById('modalTitle').textContent = 'Add Customer';
+  document.getElementById('fName').value = '';
+  document.getElementById('fContact').value = '';
+  document.getElementById('fAddress').value = '';
+  document.getElementById('fEmail').value = '';
+  document.getElementById('fPhone').value = '';
+  document.getElementById('fPlan').value = 'pro';
+  document.getElementById('fInstallDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fLat').value = '';
+  document.getElementById('fLng').value = '';
+  document.getElementById('fNotes').value = '';
+  renderFeatureToggles(PLANS.pro.features);
+  document.getElementById('customerModal').classList.add('open');
+}
+
+function editCustomerById(id) {
+  const c = data.customers.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('editId').value = c.id;
+  document.getElementById('modalTitle').textContent = 'Edit Customer';
+  document.getElementById('fName').value = c.name;
+  document.getElementById('fContact').value = c.contact;
+  document.getElementById('fAddress').value = c.address;
+  document.getElementById('fEmail').value = c.email;
+  document.getElementById('fPhone').value = c.phone || '';
+  document.getElementById('fPlan').value = c.plan;
+  document.getElementById('fInstallDate').value = c.installDate || '';
+  document.getElementById('fLat').value = c.lat || '';
+  document.getElementById('fLng').value = c.lng || '';
+  document.getElementById('fNotes').value = c.notes || '';
+  renderFeatureToggles(c.features);
+  document.getElementById('customerModal').classList.add('open');
+}
+
+function editCustomer() {
+  if (selectedId) editCustomerById(selectedId);
+}
+
+function deleteCustomer() {
+  if (!selectedId) return;
+  const c = data.customers.find(x => x.id === selectedId);
+  if (!confirm(`Delete ${c.name}? This cannot be undone.`)) return;
+  data.customers = data.customers.filter(x => x.id !== selectedId);
+  logActivity('delete', c.name, 'Customer deleted');
+  saveData();
+  closeDetail();
+  render();
+}
+
+function renderFeatureToggles(enabledFeatures) {
+  const grid = document.getElementById('fFeatures');
+  grid.innerHTML = FEATURES.map(f => {
+    const on = enabledFeatures.includes(f.key);
+    return `<div class="feature-toggle ${on ? 'on' : ''}" data-key="${f.key}" onclick="toggleFeature(this)">
+      <div class="toggle-switch"></div>
+      <span>${f.icon} ${f.name}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleFeature(el) {
+  el.classList.toggle('on');
+}
+
+// Auto-set features when plan changes
+document.getElementById('fPlan').addEventListener('change', e => {
+  const plan = PLANS[e.target.value];
+  if (plan) renderFeatureToggles(plan.features);
+});
+
+function saveCustomer() {
+  const id = document.getElementById('editId').value;
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { alert('Customer name is required'); return; }
+
+  const features = [];
+  document.querySelectorAll('#fFeatures .feature-toggle.on').forEach(el => {
+    features.push(el.dataset.key);
+  });
+
+  const obj = {
+    name,
+    contact: document.getElementById('fContact').value.trim(),
+    address: document.getElementById('fAddress').value.trim(),
+    email: document.getElementById('fEmail').value.trim(),
+    phone: document.getElementById('fPhone').value.trim(),
+    plan: document.getElementById('fPlan').value,
+    installDate: document.getElementById('fInstallDate').value,
+    lat: parseFloat(document.getElementById('fLat').value) || null,
+    lng: parseFloat(document.getElementById('fLng').value) || null,
+    features,
+    notes: document.getElementById('fNotes').value.trim(),
+  };
+
+  if (id) {
+    // Edit existing
+    const idx = data.customers.findIndex(c => c.id === id);
+    if (idx >= 0) {
+      Object.assign(data.customers[idx], obj);
+      logActivity('edit', name, 'Customer updated');
+    }
+  } else {
+    // New customer
+    data.customers.push({
+      id: genId(),
+      ...obj,
+      status: 'pending',
+      lastLogin: null,
+      healthScore: null,
+      sensorCount: obj.features.filter(f => ['soilMoisture', 'waterTable', 'submeters'].includes(f)).length * 3,
+      created: new Date().toISOString(),
+    });
+    logActivity('install', name, 'New customer added');
+  }
+
+  saveData();
+  closeModal();
+  render();
+}
+
+function closeModal() {
+  document.getElementById('customerModal').classList.remove('open');
+}
+
+// ========== TABS ==========
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+  document.getElementById('tab-' + tab).style.display = 'block';
+}
+
+// ========== ACTIVITY LOG ==========
+function logActivity(type, customer, msg) {
+  data.activity.unshift({
+    ts: new Date().toISOString(),
+    type,
+    customer,
+    msg,
+  });
+  if (data.activity.length > 200) data.activity = data.activity.slice(0, 200);
+}
+
+// ========== IMPORT / EXPORT ==========
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'swale-admin-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported.customers && Array.isArray(imported.customers)) {
+        if (!confirm(`Import ${imported.customers.length} customers? This will replace current data.`)) return;
+        data = imported;
+        saveData();
+        render();
+      }
+    } catch (err) {
+      alert('Invalid JSON file');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ========== UTILITIES ==========
+function timeAgo(date) {
+  const now = Date.now();
+  const diff = now - date.getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'Just now';
+  if (min < 60) return min + 'm ago';
+  const hrs = Math.floor(min / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return days + 'd ago';
+  return date.toLocaleDateString();
+}
+
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Close modal on backdrop click
+document.getElementById('customerModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDetail();
+  }
+});
+
+// ========== INIT ==========
+render();
+</script>
+</body>
+</html>
