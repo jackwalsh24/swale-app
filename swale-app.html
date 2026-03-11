@@ -46,6 +46,76 @@ body {
   overscroll-behavior: none;
 }
 
+/* Splash screen */
+.splash {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #0a321a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  transition: opacity 0.6s ease-out;
+}
+.splash.fade-out { opacity: 0; pointer-events: none; }
+.splash-logo {
+  width: 80px; height: 80px;
+  border-radius: 20px;
+  overflow: hidden;
+  animation: splash-breathe 2s ease-in-out infinite;
+}
+.splash-logo img { width: 100%; height: 100%; }
+.splash-text {
+  margin-top: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+.splash-sub {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+}
+.splash-dots {
+  margin-top: 24px;
+  display: flex;
+  gap: 6px;
+}
+.splash-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(34,197,94,0.6);
+  animation: splash-dot 1.2s ease-in-out infinite;
+}
+.splash-dot:nth-child(2) { animation-delay: 0.2s; }
+.splash-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes splash-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes splash-dot {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Hero image fade-in */
+.hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(1.03);
+  transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+.hero-image.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* Header */
 .header {
   display: flex;
@@ -115,12 +185,6 @@ body {
   transform-origin: center center;
   position: relative;
   will-change: transform;
-}
-.hero-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  pointer-events: none;
 }
 .hero-overlay {
   position: absolute;
@@ -685,6 +749,18 @@ body {
 </style>
 </head>
 <body>
+
+<!-- Splash Screen -->
+<div class="splash" id="splash">
+  <div class="splash-logo"><img src="app-icon-512.png" alt="Swale"></div>
+  <div class="splash-text">Swale</div>
+  <div class="splash-sub">Intelligence</div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
 
 <!-- Header -->
 <div class="header">
@@ -1681,16 +1757,46 @@ if ('serviceWorker' in navigator) {
 
 // ========== INIT ==========
 window.addEventListener('DOMContentLoaded', () => {
+  const splash = document.getElementById('splash');
+  const heroImg = document.getElementById('heroImage');
+
+  // Hero image fade-in when loaded
+  heroImg.onload = function() {
+    // Dismiss splash
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.remove(), 700);
+    // Fade in hero with slight delay for drama
+    setTimeout(() => heroImg.classList.add('loaded'), 100);
+  };
+  heroImg.onerror = function() {
+    // No image — still dismiss splash, show gradient fallback
+    this.style.height = '280px';
+    this.style.background = 'linear-gradient(135deg, #1a2a15, #0f1a2a)';
+    this.classList.add('loaded');
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.remove(), 700);
+  };
+  // If image was cached and already loaded
+  if (heroImg.complete && heroImg.naturalWidth > 0) {
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.remove(), 700);
+    setTimeout(() => heroImg.classList.add('loaded'), 100);
+  }
+
+  // Fallback: dismiss splash after 4s max (slow network)
+  setTimeout(() => {
+    if (document.getElementById('splash')) {
+      splash.classList.add('fade-out');
+      setTimeout(() => { if (splash.parentNode) splash.remove(); }, 700);
+      heroImg.classList.add('loaded');
+    }
+  }, 4000);
+
   updateDashboard();
   renderIrrigation();
   drawMainChart('moisture');
   fetchWeather();
   setInterval(fetchWeather, 15 * 60 * 1000);
-  // Fallback hero
-  document.getElementById('heroImage').onerror = function() {
-    this.style.height = '280px';
-    this.style.background = 'linear-gradient(135deg, #1a2a15, #0f1a2a)';
-  };
 });
 </script>
 </body>
