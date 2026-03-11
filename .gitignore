@@ -1,0 +1,21 @@
+# Marketing site (separate deploy later)
+index.html
+frames/
+
+# Large assets not needed for app
+oudolf-bg.png
+alderwood-soil-final.png
+beehive-grate-final.png
+check-dam-final.png
+hero-mountains.png
+swale-cross-section.png
+iron-brand.png
+brand-icon.png
+pol-*.png
+mix-*.png
+hand-rake*.png
+hori-hori-final.png
+hori-icon.png
+
+# OS files
+.DS_Store
