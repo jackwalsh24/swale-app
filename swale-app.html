@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Swale Intelligence</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Swale">
+<meta name="theme-color" content="#0f1117">
+<link rel="apple-touch-icon" href="app-icon-192.png">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #232736;
+  --border: #2a2e3d;
+  --text: #e7e5e4;
+  --text-secondary: #8b8d97;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.15);
+  --green-glow: rgba(34,197,94,0.4);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.15);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.15);
+  --cyan: #06b6d4;
+  --cyan-dim: rgba(6,182,212,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15,17,23,0.85);
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-logo {
+  width: 28px; height: 28px;
+  background: var(--green);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: #000;
+}
+.header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; }
+.header-subtitle { font-size: 11px; color: var(--text-secondary); }
+.header-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green);
+}
+.header-status::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green-glow);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Hero isometric scene */
+.hero {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(180deg, #1a1510 0%, var(--bg) 100%);
+  overflow: hidden;
+}
+.hero-image {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  display: block;
+}
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(transparent, var(--bg));
+}
+.hero-weather {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.hero-weather-temp { font-size: 42px; font-weight: 200; letter-spacing: -2px; }
+.hero-weather-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.hero-property-name {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* Weather Effects Layer */
+.weather-fx {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Rain */
+.weather-fx.rain .drop {
+  position: absolute;
+  width: 1.5px;
+  height: 18px;
+  background: linear-gradient(transparent, rgba(174,194,224,0.5));
+  border-radius: 0 0 2px 2px;
+  animation: rain-fall linear infinite;
+}
+@keyframes rain-fall {
+  0% { transform: translateY(-20px) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(500px) translateX(-30px); opacity: 0; }
+}
+
+/* Snow */
+.weather-fx.snow .flake {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  animation: snow-fall linear infinite;
+  filter: blur(0.5px);
+}
+@keyframes snow-fall {
+  0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(500px) translateX(40px) rotate(360deg); opacity: 0; }
+}
+
+/* Sun rays */
+.weather-fx.sun .ray {
+  position: absolute;
+  top: -40px;
+  width: 2px;
+  height: 200px;
+  background: linear-gradient(rgba(255,200,50,0.3), transparent);
+  transform-origin: top center;
+  animation: sun-shimmer 4s ease-in-out infinite;
+}
+@keyframes sun-shimmer {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.4; }
+}
+
+/* Sun glow */
+.weather-fx.sun .glow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,200,50,0.25) 0%, transparent 70%);
+  animation: sun-pulse 6s ease-in-out infinite;
+}
+@keyframes sun-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.6; }
+  50% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+}
+
+/* Fog/mist */
+.weather-fx.fog .mist-band {
+  position: absolute;
+  width: 200%;
+  height: 40px;
+  background: linear-gradient(90deg, transparent, rgba(200,210,220,0.08), rgba(200,210,220,0.12), rgba(200,210,220,0.08), transparent);
+  animation: fog-drift linear infinite;
+}
+@keyframes fog-drift {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+/* Overcast darkening */
+.weather-fx.overcast::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(20,25,35,0.3);
+}
+
+/* Content area */
+.content { padding: 0 16px 100px; max-width: 600px; margin: 0 auto; }
+
+/* Section headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 28px 0 12px;
+}
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.section-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+.badge-live { background: var(--green-dim); color: var(--green); }
+.badge-idle { background: var(--border); color: var(--text-secondary); }
+
+/* Metric cards grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.metric-card:hover { border-color: #3a3e4d; }
+.metric-card.wide { grid-column: span 2; }
+.metric-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.metric-icon.green { background: var(--green-dim); }
+.metric-icon.blue { background: var(--blue-dim); }
+.metric-icon.amber { background: var(--amber-dim); }
+.metric-icon.cyan { background: var(--cyan-dim); }
+.metric-icon.red { background: var(--red-dim); }
+.metric-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.metric-value {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.metric-unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+.metric-sublabel {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.metric-sparkline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  opacity: 0.3;
+}
+
+/* Zone cards */
+.zone-list { display: flex; flex-direction: column; gap: 8px; }
+.zone-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+.zone-card:hover { border-color: #3a3e4d; }
+.zone-left { display: flex; align-items: center; gap: 12px; }
+.zone-indicator {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.zone-indicator.active {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green-glow);
+  animation: pulse 2s infinite;
+}
+.zone-indicator.idle { background: var(--text-secondary); opacity: 0.4; }
+.zone-name { font-size: 14px; font-weight: 500; }
+.zone-detail { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+.zone-right { text-align: right; }
+.zone-moisture { font-size: 16px; font-weight: 600; }
+.zone-moisture.good { color: var(--green); }
+.zone-moisture.medium { color: var(--amber); }
+.zone-moisture.low { color: var(--red); }
+.zone-status { font-size: 10px; color: var(--text-secondary); margin-top: 1px; }
+
+/* Water table card */
+.water-table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+}
+.wt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.wt-value { font-size: 36px; font-weight: 600; letter-spacing: -1.5px; color: var(--cyan); }
+.wt-unit { font-size: 14px; font-weight: 400; color: var(--text-secondary); }
+.wt-trend { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+.wt-visual {
+  width: 100%;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg,
+    #2a1f0e 0%,    /* topsoil */
+    #3d2d1a 25%,   /* subsoil */
+    #2a2520 50%,   /* clay/hardpan */
+    #1a2a3a 75%,   /* saturated zone */
+    #0f2040 100%   /* water table */
+  );
+  position: relative;
+  overflow: hidden;
+}
+.wt-level-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan), 0 0 20px rgba(6,182,212,0.3);
+  transition: top 1s ease;
+}
+.wt-level-label {
+  position: absolute;
+  right: 8px;
+  font-size: 10px;
+  color: var(--cyan);
+  font-weight: 600;
+  transform: translateY(-50%);
+}
+.wt-layer-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.wt-layer-label { font-size: 9px; color: var(--text-secondary); }
+
+/* Chart area */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.chart-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+}
+.chart-tab {
+  flex: 1;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+}
+.chart-tab.active { background: var(--surface2); color: var(--text); }
+.chart-canvas {
+  width: 100%;
+  height: 140px;
+  position: relative;
+}
+.chart-canvas canvas { width: 100%; height: 100%; }
+.chart-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.chart-stat { text-align: center; }
+.chart-stat-value { font-size: 16px; font-weight: 600; }
+.chart-stat-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Irrigation controls */
+.irrigation-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.irr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.irr-status { font-size: 12px; color: var(--green); font-weight: 500; }
+.irr-zones { display: flex; flex-direction: column; gap: 10px; }
+.irr-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+.irr-zone-left { display: flex; align-items: center; gap: 10px; }
+.irr-zone-num {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.irr-zone-name { font-size: 13px; font-weight: 500; }
+.irr-zone-info { font-size: 10px; color: var(--text-secondary); }
+/* Toggle switch */
+.toggle {
+  width: 44px; height: 24px;
+  background: var(--border);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.toggle.on { background: var(--green); }
+.toggle-knob {
+  width: 20px; height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px; left: 2px;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle.on .toggle-knob { transform: translateX(20px); }
+
+/* Savings card */
+.savings-card {
+  background: linear-gradient(135deg, #0a2015, #0f1117);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+.savings-value {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -2px;
+}
+.savings-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.savings-breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(34,197,94,0.15);
+}
+.savings-stat { text-align: center; }
+.savings-stat-value { font-size: 18px; font-weight: 600; }
+.savings-stat-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Rain Check banner */
+.raincheck-banner {
+  background: var(--surface);
+  border: 1px solid var(--amber);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.raincheck-icon { font-size: 28px; }
+.raincheck-text { flex: 1; }
+.raincheck-title { font-size: 14px; font-weight: 600; color: var(--amber); }
+.raincheck-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background: rgba(15,17,23,0.9);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 100;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 12px;
+  transition: color 0.2s;
+  border: none;
+  background: none;
+}
+.nav-item.active { color: var(--green); }
+.nav-icon { font-size: 20px; }
+
+/* Responsive */
+@media (min-width: 768px) {
+  .content { padding: 0 24px 100px; }
+  .metrics-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">S</div>
+    <div>
+      <div class="header-title">Swale Intelligence</div>
+      <div class="header-subtitle">Walsh Residence</div>
+    </div>
+  </div>
+  <div class="header-status">Live</div>
+</div>
+
+<!-- Hero isometric scene -->
+<div class="hero">
+  <div class="hero-weather">
+    <div class="hero-weather-temp">48°</div>
+    <div class="hero-weather-desc">Light Rain · Seattle</div>
+  </div>
+  <img class="hero-image" id="heroImage" src="" alt="Isometric property view">
+  <div class="hero-overlay"></div>
+  <div class="hero-property-name">Walsh Field Station</div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Soil Moisture -->
+  <div class="section-header">
+    <span class="section-title">Soil Moisture</span>
+    <span class="section-badge badge-live">● LIVE</span>
+  </div>
+  <div class="zone-list" id="zoneList">
+    <div class="zone-card" onclick="toggleZoneDetail(this)">
+      <div class="zone-left">
+        <div class="zone-indicator active"></div>
+        <div>
+          <div class="zone-name">Swale X</div>
+          <div class="zone-detail">Front · Capacitive Probe #1</div>
+        </div>
+      </div>
+      <div class="zone-right">
+        <div class="zone-moisture good">47%</div>
+        <div class="zone-status">Optimal</div>
+      </div>
+    </div>
+    <div class="zone-card" onclick="toggleZoneDetail(this)">
+      <div class="zone-left">
+        <div class="zone-indicator active"></div>
+        <div>
+          <div class="zone-name">Swale Y</div>
+          <div class="zone-detail">Middle · Capacitive Probe #2</div>
+        </div>
+      </div>
+      <div class="zone-right">
+        <div class="zone-moisture good">42%</div>
+        <div class="zone-status">Optimal</div>
+      </div>
+    </div>
+    <div class="zone-card" onclick="toggleZoneDetail(this)">
+      <div class="zone-left">
+        <div class="zone-indicator active"></div>
+        <div>
+          <div class="zone-name">Swale Z</div>
+          <div class="zone-detail">Back · Capacitive Probe #3</div>
+        </div>
+      </div>
+      <div class="zone-right">
+        <div class="zone-moisture medium">28%</div>
+        <div class="zone-status">Moderate</div>
+      </div>
+    </div>
+    <div class="zone-card" onclick="toggleZoneDetail(this)">
+      <div class="zone-left">
+        <div class="zone-indicator idle"></div>
+        <div>
+          <div class="zone-name">Hanging Baskets</div>
+          <div class="zone-detail">Decorative · Zone 4</div>
+        </div>
+      </div>
+      <div class="zone-right">
+        <div class="zone-moisture low">15%</div>
+        <div class="zone-status">Needs Water</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="section-header">
+    <span class="section-title">Key Metrics</span>
+    <span class="section-badge badge-live">● LIVE</span>
+  </div>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon cyan">💧</div>
+      <div class="metric-label">Water Table</div>
+      <div class="metric-value">38<span class="metric-unit">in</span></div>
+      <div class="metric-sublabel">↑ 2in from last week</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon blue">🌊</div>
+      <div class="metric-label">Flow Today</div>
+      <div class="metric-value">12<span class="metric-unit">gal</span></div>
+      <div class="metric-sublabel">Stormwater captured</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon green">⚡</div>
+      <div class="metric-label">Sump Pump</div>
+      <div class="metric-value">0<span class="metric-unit">runs</span></div>
+      <div class="metric-sublabel">Idle for 3 days</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon amber">🌡</div>
+      <div class="metric-label">Soil Temp</div>
+      <div class="metric-value">52<span class="metric-unit">°F</span></div>
+      <div class="metric-sublabel">Growing season</div>
+    </div>
+  </div>
+
+  <!-- Water Table Visualization -->
+  <div class="section-header">
+    <span class="section-title">Water Table Depth</span>
+  </div>
+  <div class="water-table-card">
+    <div class="wt-header">
+      <div>
+        <div class="metric-label">Current Depth</div>
+        <div class="wt-value">38<span class="wt-unit"> inches</span></div>
+      </div>
+      <div class="wt-trend">↑ Rising · Healthy</div>
+    </div>
+    <div class="wt-visual">
+      <div class="wt-level-line" style="top: 65%"></div>
+      <div class="wt-level-label" style="top: 65%">← 38"</div>
+    </div>
+    <div class="wt-layer-labels">
+      <span class="wt-layer-label">Topsoil</span>
+      <span class="wt-layer-label">Subsoil</span>
+      <span class="wt-layer-label">Alderwood Hardpan</span>
+      <span class="wt-layer-label">Saturated</span>
+    </div>
+  </div>
+
+  <!-- 30-day Chart -->
+  <div class="section-header">
+    <span class="section-title">30-Day History</span>
+  </div>
+  <div class="chart-card">
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchChart(this,'moisture')">Moisture</button>
+      <button class="chart-tab" onclick="switchChart(this,'watertable')">Water Table</button>
+      <button class="chart-tab" onclick="switchChart(this,'flow')">Flow</button>
+    </div>
+    <div class="chart-canvas">
+      <canvas id="historyChart"></canvas>
+    </div>
+    <div class="chart-summary">
+      <div class="chart-stat">
+        <div class="chart-stat-value" style="color:var(--green)">41%</div>
+        <div class="chart-stat-label">Avg Moisture</div>
+      </div>
+      <div class="chart-stat">
+        <div class="chart-stat-value" style="color:var(--cyan)">36"</div>
+        <div class="chart-stat-label">Avg Depth</div>
+      </div>
+      <div class="chart-stat">
+        <div class="chart-stat-value" style="color:var(--blue)">847 gal</div>
+        <div class="chart-stat-label">Total Captured</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Irrigation Control -->
+  <div class="section-header">
+    <span class="section-title">RainBird Control</span>
+    <span class="section-badge badge-idle">ESP-TM2</span>
+  </div>
+  <div class="irrigation-card">
+    <div class="irr-header">
+      <div class="metric-label">Irrigation Zones</div>
+      <div class="irr-status">All Systems Normal</div>
+    </div>
+    <div class="irr-zones">
+      <div class="irr-zone">
+        <div class="irr-zone-left">
+          <div class="irr-zone-num">1</div>
+          <div>
+            <div class="irr-zone-name">Swale X → Y → Z</div>
+            <div class="irr-zone-info">Last run: Never · Moisture sufficient</div>
+          </div>
+        </div>
+        <div class="toggle" onclick="toggleSwitch(this)">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="irr-zone">
+        <div class="irr-zone-left">
+          <div class="irr-zone-num">2</div>
+          <div>
+            <div class="irr-zone-name">Hanging Baskets</div>
+            <div class="irr-zone-info">Last run: 6h ago · 10 min cycle</div>
+          </div>
+        </div>
+        <div class="toggle on" onclick="toggleSwitch(this)">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submeters -->
+  <div class="section-header">
+    <span class="section-title">Submeters</span>
+    <span class="section-badge badge-live">● LIVE</span>
+  </div>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon blue">🔵</div>
+      <div class="metric-label">Zone 1 · Swales</div>
+      <div class="metric-value">0.3<span class="metric-unit">gal</span></div>
+      <div class="metric-sublabel">Today · 2.1 gal this month</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon amber">🟡</div>
+      <div class="metric-label">Zone 2 · Baskets</div>
+      <div class="metric-value">4.7<span class="metric-unit">gal</span></div>
+      <div class="metric-sublabel">Today · 47.2 gal this month</div>
+    </div>
+    <div class="metric-card wide">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div class="metric-label">Total Water Usage</div>
+          <div class="metric-value" style="font-size:22px;">49.3<span class="metric-unit">gal this month</span></div>
+        </div>
+        <div style="text-align:right;">
+          <div class="metric-label">vs. Traditional Lawn</div>
+          <div style="font-size:22px;font-weight:600;color:var(--green);">-312 gal</div>
+          <div class="metric-sublabel" style="color:var(--green);">↓ 86% reduction</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;">
+        <div style="width:14%;height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:3px;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <span class="metric-sublabel">Your usage: 49 gal</span>
+        <span class="metric-sublabel" style="opacity:0.4;">Traditional: 361 gal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Water Savings -->
+  <div class="section-header">
+    <span class="section-title">Impact</span>
+  </div>
+  <div class="savings-card">
+    <div class="savings-value">96%</div>
+    <div class="savings-label">Less water used vs. traditional landscaping</div>
+    <div class="savings-breakdown">
+      <div class="savings-stat">
+        <div class="savings-stat-value">847</div>
+        <div class="savings-stat-label">Gallons Captured</div>
+      </div>
+      <div class="savings-stat">
+        <div class="savings-stat-value">$42</div>
+        <div class="savings-stat-label">Water Savings</div>
+      </div>
+      <div class="savings-stat">
+        <div class="savings-stat-value">0</div>
+        <div class="savings-stat-label">Sump Pump Runs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rain Check -->
+  <div class="section-header">
+    <span class="section-title">Rain Check Program</span>
+  </div>
+  <div class="raincheck-banner">
+    <div class="raincheck-icon">🌧️</div>
+    <div class="raincheck-text">
+      <div class="raincheck-title">Swale Award Member</div>
+      <div class="raincheck-desc">Your swale health score is 92/100. As a Swale Award Member, you've earned a $100 Rain Check. Thank you for leading by example.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <button class="nav-item active">
+    <span class="nav-icon">🏠</span>
+    Home
+  </button>
+  <button class="nav-item">
+    <span class="nav-icon">💧</span>
+    Zones
+  </button>
+  <button class="nav-item">
+    <span class="nav-icon">💡</span>
+    Lights
+  </button>
+  <button class="nav-item">
+    <span class="nav-icon">📊</span>
+    History
+  </button>
+  <button class="nav-item">
+    <span class="nav-icon">⚙️</span>
+    Settings
+  </button>
+</div>
+
+<script>
+// Toggle irrigation switches
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+}
+
+// Toggle zone detail expansion
+function toggleZoneDetail(el) {
+  el.style.borderColor = el.style.borderColor === 'rgb(34, 197, 94)' ? '' : 'rgb(34, 197, 94)';
+}
+
+// Chart tab switching
+function switchChart(tab, type) {
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  drawChart(type);
+}
+
+// Simple sparkline chart
+function drawChart(type) {
+  const canvas = document.getElementById('historyChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 140 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '140px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, rect.width, 140);
+
+  const datasets = {
+    moisture: { data: [38,41,39,44,47,45,42,40,43,46,48,45,42,39,41,44,47,45,43,41,38,40,43,45,47,44,42,41,43,42], color: '#22c55e', label: '%' },
+    watertable: { data: [42,41,40,39,38,37,36,35,36,37,38,39,38,37,36,35,36,37,38,39,40,39,38,37,36,37,38,39,38,38], color: '#06b6d4', label: 'in' },
+    flow: { data: [0,2,8,15,3,0,0,1,12,22,5,0,0,0,3,18,8,1,0,0,6,14,9,2,0,0,0,4,12,8], color: '#3b82f6', label: 'gal' }
+  };
+
+  const d = datasets[type];
+  const w = rect.width;
+  const h = 140;
+  const pad = 20;
+  const min = Math.min(...d.data);
+  const max = Math.max(...d.data);
+  const range = max - min || 1;
+
+  // Draw grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 4; i++) {
+    const y = pad + (h - 2 * pad) * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+
+  // Draw filled area
+  ctx.beginPath();
+  d.data.forEach((v, i) => {
+    const x = (i / (d.data.length - 1)) * w;
+    const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(w, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, d.color + '40');
+  grad.addColorStop(1, d.color + '00');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Draw line
+  ctx.beginPath();
+  d.data.forEach((v, i) => {
+    const x = (i / (d.data.length - 1)) * w;
+    const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = d.color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Draw current value dot
+  const lastX = w;
+  const lastY = h - pad - ((d.data[d.data.length - 1] - min) / range) * (h - 2 * pad);
+  ctx.beginPath();
+  ctx.arc(lastX - 2, lastY, 4, 0, Math.PI * 2);
+  ctx.fillStyle = d.color;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(lastX - 2, lastY, 8, 0, Math.PI * 2);
+  ctx.fillStyle = d.color + '30';
+  ctx.fill();
+}
+
+// Weather effects system
+function setWeather(condition) {
+  // Remove existing fx layer
+  const old = document.querySelector('.weather-fx');
+  if (old) old.remove();
+
+  const hero = document.querySelector('.hero');
+  const fx = document.createElement('div');
+  fx.className = 'weather-fx ' + condition;
+  hero.appendChild(fx);
+
+  // Update weather display text
+  const desc = document.querySelector('.hero-weather-desc');
+  const tempEl = document.querySelector('.hero-weather-temp');
+  const conditions = {
+    rain:     { text: 'Light Rain · Seattle',    temp: '48°' },
+    snow:     { text: 'Snow · Seattle',           temp: '31°' },
+    sun:      { text: 'Clear · Seattle',          temp: '72°' },
+    fog:      { text: 'Foggy · Seattle',          temp: '44°' },
+    overcast: { text: 'Overcast · Seattle',       temp: '52°' }
+  };
+  if (conditions[condition]) {
+    desc.textContent = conditions[condition].text;
+    tempEl.textContent = conditions[condition].temp;
+  }
+
+  if (condition === 'rain') {
+    for (let i = 0; i < 80; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'drop';
+      drop.style.left = Math.random() * 100 + '%';
+      drop.style.animationDuration = (0.6 + Math.random() * 0.4) + 's';
+      drop.style.animationDelay = Math.random() * 2 + 's';
+      drop.style.opacity = 0.3 + Math.random() * 0.5;
+      fx.appendChild(drop);
+    }
+  }
+
+  if (condition === 'snow') {
+    for (let i = 0; i < 50; i++) {
+      const flake = document.createElement('div');
+      flake.className = 'flake';
+      flake.style.left = Math.random() * 100 + '%';
+      const size = 2 + Math.random() * 4;
+      flake.style.width = size + 'px';
+      flake.style.height = size + 'px';
+      flake.style.animationDuration = (3 + Math.random() * 4) + 's';
+      flake.style.animationDelay = Math.random() * 5 + 's';
+      flake.style.opacity = 0.4 + Math.random() * 0.6;
+      fx.appendChild(flake);
+    }
+  }
+
+  if (condition === 'sun') {
+    // Glow orb
+    const glow = document.createElement('div');
+    glow.className = 'glow';
+    fx.appendChild(glow);
+    // Light rays
+    for (let i = 0; i < 8; i++) {
+      const ray = document.createElement('div');
+      ray.className = 'ray';
+      ray.style.left = (20 + i * 8) + '%';
+      ray.style.transform = 'rotate(' + (-15 + i * 4) + 'deg)';
+      ray.style.animationDelay = (i * 0.5) + 's';
+      ray.style.height = (150 + Math.random() * 100) + 'px';
+      fx.appendChild(ray);
+    }
+  }
+
+  if (condition === 'fog') {
+    for (let i = 0; i < 4; i++) {
+      const band = document.createElement('div');
+      band.className = 'mist-band';
+      band.style.top = (30 + i * 20) + '%';
+      band.style.animationDuration = (15 + i * 8) + 's';
+      band.style.animationDelay = (i * 3) + 's';
+      band.style.opacity = 0.6 + Math.random() * 0.4;
+      fx.appendChild(band);
+    }
+  }
+}
+
+// Weather cycle demo — click hero to cycle
+let weatherIndex = 0;
+const weatherTypes = ['rain', 'snow', 'sun', 'fog', 'overcast'];
+document.querySelector('.hero').addEventListener('click', () => {
+  weatherIndex = (weatherIndex + 1) % weatherTypes.length;
+  setWeather(weatherTypes[weatherIndex]);
+});
+
+// Load hero image
+function loadHero() {
+  const img = document.getElementById('heroImage');
+  img.src = 'hero-isometric.png';
+  img.onerror = function() {
+    this.style.height = '300px';
+    this.style.background = 'linear-gradient(135deg, #1a2a15, #0f1a2a)';
+  };
+}
+
+// Open-Meteo weather API — free, no key, no limits
+async function fetchWeather() {
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=47.7185&longitude=-122.2930&current=temperature_2m,weathercode,windspeed_10m&temperature_unit=fahrenheit&timezone=America/Los_Angeles');
+    const data = await res.json();
+    const curr = data.current;
+    const temp = Math.round(curr.temperature_2m);
+    const code = curr.weathercode;
+
+    // Update hero display
+    document.querySelector('.hero-weather-temp').textContent = temp + '°';
+
+    // WMO weather codes → condition + description
+    let condition, desc;
+    if (code === 0 || code === 1) { condition = 'sun'; desc = 'Clear'; }
+    else if (code === 2) { condition = 'sun'; desc = 'Partly Cloudy'; }
+    else if (code === 3) { condition = 'overcast'; desc = 'Overcast'; }
+    else if (code >= 45 && code <= 48) { condition = 'fog'; desc = 'Foggy'; }
+    else if (code >= 51 && code <= 57) { condition = 'rain'; desc = 'Drizzle'; }
+    else if (code >= 61 && code <= 67) { condition = 'rain'; desc = 'Rain'; }
+    else if (code >= 71 && code <= 77) { condition = 'snow'; desc = 'Snow'; }
+    else if (code >= 80 && code <= 82) { condition = 'rain'; desc = 'Showers'; }
+    else if (code >= 85 && code <= 86) { condition = 'snow'; desc = 'Snow Showers'; }
+    else if (code >= 95) { condition = 'rain'; desc = 'Thunderstorm'; }
+    else { condition = 'overcast'; desc = 'Cloudy'; }
+
+    document.querySelector('.hero-weather-desc').textContent = desc + ' · Seattle';
+    setWeather(condition);
+
+    // Store last weather fetch
+    localStorage.setItem('swale_weather', JSON.stringify({ temp, code, condition, desc, ts: Date.now() }));
+  } catch (e) {
+    console.warn('Weather fetch failed, using default:', e);
+    setWeather('rain');
+  }
+}
+
+// Sensor data store (localStorage — will migrate to Firebase later)
+const STORE_KEY = 'swale_sensor_data';
+function getSensorData() {
+  return JSON.parse(localStorage.getItem(STORE_KEY) || '{"readings":[],"daily":{}}');
+}
+function saveSensorReading(reading) {
+  // reading: { ts, swaleX, swaleY, swaleZ, waterTable, flow1, flow2, sumpLevel, sumpRunning }
+  const store = getSensorData();
+  store.readings.push(reading);
+  // Keep last 30 days (8640 readings at 5-min intervals)
+  if (store.readings.length > 8640) store.readings = store.readings.slice(-8640);
+  // Aggregate daily
+  const day = new Date(reading.ts).toISOString().slice(0, 10);
+  if (!store.daily[day]) store.daily[day] = { flowTotal: 0, sumpRuns: 0, moistureAvg: [], waterTableAvg: [] };
+  store.daily[day].flowTotal += (reading.flow1 || 0) + (reading.flow2 || 0);
+  store.daily[day].moistureAvg.push((reading.swaleX + reading.swaleY + reading.swaleZ) / 3);
+  store.daily[day].waterTableAvg.push(reading.waterTable);
+  if (reading.sumpRunning) store.daily[day].sumpRuns++;
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+}
+
+// ESP32 sensor ingest — the ESP32 will POST to this page via a simple HTTP server
+// For now, simulate. When real hardware arrives, ESP32 posts to a local Node.js server
+// that calls saveSensorReading() and pushes to this page via WebSocket or SSE.
+//
+// ESP32 POST format:
+// POST /api/sensor { swaleX: 42, swaleY: 38, swaleZ: 28, waterTable: 38, flow1: 0.1, flow2: 0.3, sumpLevel: 12, sumpRunning: false }
+
+// Submeter calculations
+const WATER_RATE = 0.0089; // $/gallon (Seattle avg ~$8.90 per 1000 gal)
+function updateSubmeters() {
+  const store = getSensorData();
+  const today = new Date().toISOString().slice(0, 10);
+  const thisMonth = today.slice(0, 7);
+  let monthFlow = 0;
+  Object.keys(store.daily).forEach(d => {
+    if (d.startsWith(thisMonth)) monthFlow += store.daily[d].flowTotal;
+  });
+  // Update submeter display if we have real data
+  // For now, mock values are in the HTML
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', () => {
+  loadHero();
+  drawChart('moisture');
+  fetchWeather(); // Real weather from Open-Meteo
+  updateSubmeters();
+  // Refresh weather every 15 min
+  setInterval(fetchWeather, 15 * 60 * 1000);
+});
+
+// Simulate live updates
+setInterval(() => {
+  const zones = document.querySelectorAll('.zone-moisture');
+  zones.forEach(z => {
+    const val = parseInt(z.textContent);
+    const delta = Math.random() > 0.5 ? 1 : -1;
+    const newVal = Math.max(10, Math.min(60, val + delta));
+    z.textContent = newVal + '%';
+    z.className = 'zone-moisture ' + (newVal > 35 ? 'good' : newVal > 20 ? 'medium' : 'low');
+  });
+}, 5000);
+</script>
+
+</body>
+</html>
